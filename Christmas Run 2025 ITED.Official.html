@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎄 Santa's World Run 🎅</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            border: 4px solid #ffd700;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+        
+        #gameCanvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 10px;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+        }
+        
+        #ui div {
+            margin: 5px 0;
+        }
+        
+        #powerBar {
+            width: 100px;
+            height: 15px;
+            background: #333;
+            border: 2px solid #fff;
+            margin-top: 5px;
+        }
+        
+        #powerFill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ffff00);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        #country {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #ffd700;
+            font-size: 8px;
+            text-shadow: 2px 2px 0 #000;
+            text-align: right;
+        }
+        
+        #trademark {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+            font-size: 6px;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            z-index: 100;
+        }
+        
+        #startScreen h1 {
+            font-size: 18px;
+            color: #ff0000;
+            text-shadow: 3px 3px 0 #008000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        #startScreen p, #gameOverScreen p {
+            font-size: 8px;
+            margin: 8px 0;
+            color: #ffd700;
+        }
+        
+        .btn {
+            background: linear-gradient(180deg, #ff0000 0%, #cc0000 100%);
+            border: 3px solid #ffd700;
+            color: #fff;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.1s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(180deg, #ff3333 0%, #ff0000 100%);
+        }
+        
+        #controls {
+            font-size: 7px;
+            color: #aaa;
+            margin-top: 15px;
+            text-align: center;
+            line-height: 1.8;
+        }
+        
+        #gameOverScreen h2 {
+            font-size: 16px;
+            color: #ff0000;
+            margin-bottom: 15px;
+        }
+        
+        #finalScore {
+            font-size: 12px;
+            color: #ffd700;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        #muteBtn {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #ffd700;
+            color: #fff;
+            padding: 5px 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            cursor: pointer;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        <button id="muteBtn">🔊</button>
+        <div id="ui">
+            <div>🎁 GIFTS: <span id="giftCount">0</span></div>
+            <div>⭐ SCORE: <span id="score">0</span></div>
+            <div>❤️ LIVES: <span id="lives">3</span></div>
+            <div>🎄 POWER:</div>
+            <div id="powerBar"><div id="powerFill"></div></div>
+        </div>
+        <div id="country">
+            <div id="countryName">NORTH POLE</div>
+            <div id="countryFlag"></div>
+        </div>
+        <div id="trademark">@ited.official | Follow us on IG/threads</div>
+        
+        <div id="startScreen">
+            <h1>🎄 SANTA'S<br>WORLD RUN 🎅</h1>
+            <p>Help Santa deliver gifts around the world!</p>
+            <p>Collect gifts & avoid obstacles</p>
+            <div id="controls">
+                ⬆️⬇️⬅️➡️ - MOVE SANTA<br>
+                ENTER - CHRISTMAS POWER (5 gifts)<br>
+                PORTALS - TRAVEL TO NEW COUNTRIES
+            </div>
+            <button class="btn" id="startBtn">START GAME</button>
+            <p style="font-size: 6px; color: #888; margin-top: 20px;">@ited.official | Follow us on IG/threads</p>
+        </div>
+        
+        <div id="gameOverScreen" class="hidden">
+            <h2>GAME OVER</h2>
+            <p id="finalScore">SCORE: 0</p>
+            <p id="countriesVisited">COUNTRIES: 0</p>
+            <button class="btn" id="restartBtn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Canvas Setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Audio Context for 8-bit sounds
+        let audioCtx = null;
+        let isMuted = false;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // 8-bit Sound Generator
+        function playSound(type) {
+            if (isMuted || !audioCtx) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'collect':
+                    oscillator.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    oscillator.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'hit':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'power':
+                    oscillator.type = 'square';
+                    for(let i = 0; i < 10; i++) {
+                        oscillator.frequency.setValueAtTime(200 + i * 100, audioCtx.currentTime + i * 0.05);
+                    }
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'portal':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.5);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'jingle':
+                    const notes = [523, 523, 523, 523, 523, 659, 440, 494, 523];
+                    notes.forEach((freq, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.15);
+                        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.14);
+                        osc.start(audioCtx.currentTime + i * 0.15);
+                        osc.stop(audioCtx.currentTime + i * 0.15 + 0.15);
+                    });
+                    break;
+            }
+        }
+        
+        // Background Music
+        let bgMusicInterval = null;
+        function startBgMusic() {
+            if (bgMusicInterval) return;
+            const melody = [262, 294, 330, 262, 330, 294, 262, 330, 349, 392, 349, 330, 294, 262];
+            let noteIndex = 0;
+            
+            bgMusicInterval = setInterval(() => {
+                if (isMuted || !audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(melody[noteIndex], audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.3);
+                noteIndex = (noteIndex + 1) % melody.length;
+            }, 300);
+        }
+        
+        function stopBgMusic() {
+            if (bgMusicInterval) {
+                clearInterval(bgMusicInterval);
+                bgMusicInterval = null;
+            }
+        }
+        
+        // Countries Data with Landmarks
+        const countries = [
+            { name: 'NORTH POLE', flag: '🎅', color: '#87CEEB', groundColor: '#FFFFFF', landmark: 'santaWorkshop' },
+            { name: 'UNITED STATES', flag: '🇺🇸', color: '#1E3A5F', groundColor: '#4A4A4A', landmark: 'statueOfLiberty' },
+            { name: 'CHINA', flag: '🇨🇳', color: '#FF6B6B', groundColor: '#8B4513', landmark: 'greatWall' },
+            { name: 'KOREA', flag: '🇰🇷', color: '#4A90D9', groundColor: '#6B8E23', landmark: 'gyeongbokgung' },
+            { name: 'JAPAN', flag: '🇯🇵', color: '#FFB7C5', groundColor: '#8FBC8F', landmark: 'mtFuji' },
+            { name: 'HONG KONG', flag: '🇭🇰', color: '#2C3E50', groundColor: '#696969', landmark: 'victoriaHarbour' },
+            { name: 'ITALY', flag: '🇮🇹', color: '#F4A460', groundColor: '#DEB887', landmark: 'colosseum' },
+            { name: 'FRANCE', flag: '🇫🇷', color: '#6B5B95', groundColor: '#A0522D', landmark: 'eiffelTower' },
+            { name: 'UNITED KINGDOM', flag: '🇬🇧', color: '#4A4A4A', groundColor: '#556B2F', landmark: 'bigBen' },
+            { name: 'RUSSIA', flag: '🇷🇺', color: '#1C1C3C', groundColor: '#DCDCDC', landmark: 'stBasils' },
+            { name: 'CANADA', flag: '🇨🇦', color: '#2E4A62', groundColor: '#F5F5F5', landmark: 'cnTower' },
+            { name: 'UAE', flag: '🇦🇪', color: '#DAA520', groundColor: '#F4A460', landmark: 'burjKhalifa' },
+            { name: 'FINLAND', flag: '🇫🇮', color: '#0D1B2A', groundColor: '#E8E8E8', landmark: 'santaVillage' },
+            { name: 'NORWAY', flag: '🇳🇴', color: '#1B4F72', groundColor: '#708090', landmark: 'fjords' },
+            { name: 'SINGAPORE', flag: '🇸🇬', color: '#2C3E50', groundColor: '#3CB371', landmark: 'marinaBay' },
+            { name: 'MALAYSIA', flag: '🇲🇾', color: '#0047AB', groundColor: '#228B22', landmark: 'petronasTowers' },
+            { name: 'INDONESIA', flag: '🇮🇩', color: '#006400', groundColor: '#8B4513', landmark: 'borobudur' },
+            { name: 'INDIA', flag: '🇮🇳', color: '#FF9933', groundColor: '#C19A6B', landmark: 'tajMahal' },
+            { name: 'THAILAND', flag: '🇹🇭', color: '#FFD700', groundColor: '#DAA520', landmark: 'grandPalace' }
+        ];
+        
+        // Game State
+        let gameState = {
+            running: false,
+            score: 0,
+            gifts: 0,
+            lives: 3,
+            powerReady: false,
+            powerActive: false,
+            powerTimer: 0,
+            currentCountry: 0,
+            countriesVisited: [0],
+            gameSpeed: 3,
+            frame: 0
+        };
+        
+        // Santa/Sleigh
+        let santa = {
+            x: 100,
+            y: 250,
+            width: 80,
+            height: 50,
+            targetY: 250,
+            velocityY: 0
+        };
+        
+        // Game Objects
+        let obstacles = [];
+        let gifts = [];
+        let portals = [];
+        let particles = [];
+        let snowflakes = [];
+        
+        // Initialize snowflakes
+        for (let i = 0; i < 50; i++) {
+            snowflakes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 3 + 1,
+                speed: Math.random() * 2 + 1
+            });
+        }
+        
+        // Pixel Art Drawing Functions
+        function drawPixelRect(x, y, w, h, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+        }
+        
+        function drawSanta(x, y) {
+            // Reindeer
+            const reinX = x - 40;
+            const reinY = y + 10;
+            
+            // Reindeer body
+            drawPixelRect(reinX, reinY, 30, 15, '#8B4513');
+            drawPixelRect(reinX + 25, reinY - 10, 10, 15, '#8B4513');
+            
+            // Antlers
+            drawPixelRect(reinX + 28, reinY - 18, 3, 8, '#654321');
+            drawPixelRect(reinX + 25, reinY - 20, 8, 3, '#654321');
+            drawPixelRect(reinX + 35, reinY - 18, 3, 8, '#654321');
+            drawPixelRect(reinX + 32, reinY - 20, 8, 3, '#654321');
+            
+            // Red nose
+            drawPixelRect(reinX + 32, reinY - 5, 5, 5, '#FF0000');
+            
+            // Reindeer legs (animated)
+            const legOffset = Math.sin(gameState.frame * 0.3) * 5;
+            drawPixelRect(reinX + 5, reinY + 15, 4, 10 + legOffset, '#654321');
+            drawPixelRect(reinX + 20, reinY + 15, 4, 10 - legOffset, '#654321');
+            
+            // Harness
+            drawPixelRect(reinX + 30, reinY + 5, 25, 3, '#FFD700');
+            
+            // Sleigh
+            const sleighX = x;
+            const sleighY = y;
+            
+            // Sleigh body
+            drawPixelRect(sleighX, sleighY, 60, 30, '#8B0000');
+            drawPixelRect(sleighX - 5, sleighY + 25, 70, 8, '#8B0000');
+            drawPixelRect(sleighX + 55, sleighY + 5, 10, 25, '#8B0000');
+            
+            // Sleigh runners
+            drawPixelRect(sleighX - 10, sleighY + 33, 80, 5, '#FFD700');
+            drawPixelRect(sleighX - 15, sleighY + 30, 10, 8, '#FFD700');
+            
+            // Gold trim
+            drawPixelRect(sleighX, sleighY, 60, 4, '#FFD700');
+            drawPixelRect(sleighX + 55, sleighY + 5, 10, 4, '#FFD700');
+            
+            // Santa body
+            drawPixelRect(sleighX + 15, sleighY - 25, 30, 30, '#FF0000');
+            
+            // Santa belt
+            drawPixelRect(sleighX + 15, sleighY - 5, 30, 5, '#000000');
+            drawPixelRect(sleighX + 27, sleighY - 7, 6, 9, '#FFD700');
+            
+            // Santa head
+            drawPixelRect(sleighX + 20, sleighY - 40, 20, 18, '#FFDAB9');
+            
+            // Santa hat
+            drawPixelRect(sleighX + 18, sleighY - 50, 24, 12, '#FF0000');
+            drawPixelRect(sleighX + 38, sleighY - 52, 10, 10, '#FF0000');
+            drawPixelRect(sleighX + 45, sleighY - 50, 8, 8, '#FFFFFF');
+            drawPixelRect(sleighX + 18, sleighY - 40, 26, 4, '#FFFFFF');
+            
+            // Santa beard
+            drawPixelRect(sleighX + 20, sleighY - 28, 20, 10, '#FFFFFF');
+            drawPixelRect(sleighX + 22, sleighY - 18, 16, 5, '#FFFFFF');
+            
+            // Santa eyes
+            drawPixelRect(sleighX + 24, sleighY - 36, 4, 4, '#000000');
+            drawPixelRect(sleighX + 32, sleighY - 36, 4, 4, '#000000');
+            
+            // Gift bag in sleigh
+            drawPixelRect(sleighX + 40, sleighY - 15, 15, 20, '#228B22');
+            drawPixelRect(sleighX + 45, sleighY - 18, 5, 5, '#FF0000');
+            
+            // Power effect
+            if (gameState.powerActive) {
+                ctx.strokeStyle = `rgba(255, 215, 0, ${0.5 + Math.sin(gameState.frame * 0.2) * 0.5})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(x + 30, y, 60 + Math.sin(gameState.frame * 0.3) * 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        function drawLandmark(landmark, x) {
+            const baseY = 420;
+            
+            switch(landmark) {
+                case 'santaWorkshop':
+                    // Colorful workshop
+                    drawPixelRect(x, baseY - 80, 100, 80, '#8B4513');
+                    drawPixelRect(x + 10, baseY - 100, 80, 25, '#FF0000');
+                    drawPixelRect(x + 45, baseY - 120, 10, 25, '#8B4513');
+                    drawPixelRect(x + 20, baseY - 50, 20, 30, '#654321');
+                    drawPixelRect(x + 60, baseY - 60, 25, 20, '#87CEEB');
+                    // Candy cane decorations
+                    drawPixelRect(x - 10, baseY - 100, 8, 60, '#FF0000');
+                    drawPixelRect(x - 10, baseY - 100, 8, 10, '#FFFFFF');
+                    drawPixelRect(x - 10, baseY - 80, 8, 10, '#FFFFFF');
+                    drawPixelRect(x - 10, baseY - 60, 8, 10, '#FFFFFF');
+                    break;
+                    
+                case 'statueOfLiberty':
+                    // Statue of Liberty
+                    drawPixelRect(x + 20, baseY - 30, 60, 30, '#708090');
+                    drawPixelRect(x + 35, baseY - 120, 30, 90, '#7FFFD4');
+                    drawPixelRect(x + 30, baseY - 130, 40, 15, '#7FFFD4');
+                    drawPixelRect(x + 40, baseY - 145, 20, 18, '#FFDAB9');
+                    // Crown
+                    drawPixelRect(x + 38, baseY - 160, 24, 15, '#7FFFD4');
+                    for(let i = 0; i < 7; i++) {
+                        drawPixelRect(x + 38 + i * 4, baseY - 170, 3, 12, '#7FFFD4');
+                    }
+                    // Torch
+                    drawPixelRect(x + 65, baseY - 160, 8, 40, '#7FFFD4');
+                    drawPixelRect(x + 62, baseY - 175, 14, 18, '#FFD700');
+                    drawPixelRect(x + 65, baseY - 185, 8, 12, '#FFA500');
+                    break;
+                    
+                case 'greatWall':
+                    // Great Wall of China
+                    for(let i = 0; i < 5; i++) {
+                        const wallY = baseY - 50 - Math.sin(i * 0.5) * 20;
+                        drawPixelRect(x + i * 25, wallY, 28, 50 + Math.sin(i * 0.5) * 20, '#8B7355');
+                        drawPixelRect(x + i * 25, wallY - 10, 28, 12, '#A0522D');
+                        // Battlements
+                        for(let j = 0; j < 3; j++) {
+                            drawPixelRect(x + i * 25 + j * 9, wallY - 18, 6, 10, '#8B7355');
+                        }
+                    }
+                    break;
+                    
+                case 'gyeongbokgung':
+                    // Korean Palace
+                    drawPixelRect(x + 10, baseY - 40, 80, 40, '#DEB887');
+                    drawPixelRect(x, baseY - 70, 100, 35, '#2F4F4F');
+                    drawPixelRect(x + 5, baseY - 65, 90, 5, '#FFD700');
+                    drawPixelRect(x + 20, baseY - 90, 60, 25, '#2F4F4F');
+                    drawPixelRect(x + 25, baseY - 85, 50, 5, '#FFD700');
+                    // Roof curve
+                    drawPixelRect(x - 5, baseY - 70, 10, 8, '#2F4F4F');
+                    drawPixelRect(x + 95, baseY - 70, 10, 8, '#2F4F4F');
+                    break;
+                    
+                case 'mtFuji':
+                    // Mount Fuji
+                    ctx.fillStyle = '#4169E1';
+                    ctx.beginPath();
+                    ctx.moveTo(x, baseY);
+                    ctx.lineTo(x + 60, baseY - 120);
+                    ctx.lineTo(x + 120, baseY);
+                    ctx.fill();
+                    // Snow cap
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 40, baseY - 90);
+                    ctx.lineTo(x + 60, baseY - 120);
+                    ctx.lineTo(x + 80, baseY - 90);
+                    ctx.lineTo(x + 70, baseY - 80);
+                    ctx.lineTo(x + 50, baseY - 80);
+                    ctx.fill();
+                    // Cherry blossom tree
+                    drawPixelRect(x + 110, baseY - 50, 8, 50, '#8B4513');
+                    drawPixelRect(x + 100, baseY - 70, 30, 25, '#FFB7C5');
+                    break;
+                    
+                case 'victoriaHarbour':
+                    // Hong Kong skyline
+                    drawPixelRect(x, baseY - 100, 20, 100, '#4A4A4A');
+                    drawPixelRect(x + 25, baseY - 130, 25, 130, '#5A5A5A');
+                    drawPixelRect(x + 55, baseY - 90, 20, 90, '#4A4A4A');
+                    drawPixelRect(x + 80, baseY - 150, 30, 150, '#3A3A3A');
+                    // Lights
+                    for(let i = 0; i < 5; i++) {
+                        drawPixelRect(x + 85, baseY - 140 + i * 25, 20, 3, '#FF0000');
+                        drawPixelRect(x + 85, baseY - 130 + i * 25, 20, 3, '#00FF00');
+                    }
+                    // IFC-like building
+                    drawPixelRect(x + 30, baseY - 160, 15, 30, '#C0C0C0');
+                    break;
+                    
+                case 'colosseum':
+                    // Colosseum
+                    drawPixelRect(x, baseY - 60, 100, 60, '#DEB887');
+                    // Arches
+                    for(let i = 0; i < 4; i++) {
+                        drawPixelRect(x + 10 + i * 22, baseY - 50, 15, 30, '#8B7355');
+                        drawPixelRect(x + 10 + i * 22, baseY - 55, 15, 8, '#DEB887');
+                    }
+                    // Upper level
+                    drawPixelRect(x + 5, baseY - 75, 90, 18, '#D2B48C');
+                    for(let i = 0; i < 6; i++) {
+                        drawPixelRect(x + 10 + i * 15, baseY - 72, 8, 12, '#8B7355');
+                    }
+                    break;
+                    
+                case 'eiffelTower':
+                    // Eiffel Tower
+                    ctx.fillStyle = '#4A4A4A';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 30, baseY);
+                    ctx.lineTo(x + 45, baseY - 150);
+                    ctx.lineTo(x + 55, baseY - 150);
+                    ctx.lineTo(x + 70, baseY);
+                    ctx.fill();
+                    // Platforms
+                    drawPixelRect(x + 25, baseY - 40, 50, 8, '#3A3A3A');
+                    drawPixelRect(x + 32, baseY - 90, 36, 6, '#3A3A3A');
+                    drawPixelRect(x + 40, baseY - 130, 20, 5, '#3A3A3A');
+                    // Top
+                    drawPixelRect(x + 47, baseY - 170, 6, 25, '#4A4A4A');
+                    break;
+                    
+                case 'bigBen':
+                    // Big Ben
+                    drawPixelRect(x + 20, baseY - 140, 50, 140, '#C19A6B');
+                    drawPixelRect(x + 15, baseY - 160, 60, 25, '#8B7355');
+                    // Clock face
+                    drawPixelRect(x + 30, baseY - 120, 30, 30, '#FFFACD');
+                    drawPixelRect(x + 43, baseY - 115, 4, 12, '#000000');
+                    drawPixelRect(x + 43, baseY - 108, 10, 3, '#000000');
+                    // Spire
+                    ctx.fillStyle = '#4A4A4A';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 35, baseY - 160);
+                    ctx.lineTo(x + 45, baseY - 190);
+                    ctx.lineTo(x + 55, baseY - 160);
+                    ctx.fill();
+                    break;
+                    
+                case 'stBasils':
+                    // St. Basil's Cathedral
+                    drawPixelRect(x + 20, baseY - 80, 60, 80, '#FFFFFF');
+                    // Onion domes
+                    const domeColors = ['#FF0000', '#00FF00', '#0000FF', '#FFD700', '#FF00FF'];
+                    for(let i = 0; i < 5; i++) {
+                        const domeX = x + 15 + i * 15;
+                        const domeY = baseY - 100 - Math.abs(i - 2) * 20;
+                        ctx.fillStyle = domeColors[i];
+                        ctx.beginPath();
+                        ctx.arc(domeX + 7, domeY, 10, Math.PI, 0);
+                        ctx.fill();
+                        drawPixelRect(domeX + 3, domeY - 20, 8, 22, domeColors[i]);
+                        drawPixelRect(domeX + 5, domeY - 28, 4, 10, '#FFD700');
+                    }
+                    break;
+                    
+                case 'cnTower':
+                    // CN Tower
+                    drawPixelRect(x + 45, baseY - 180, 10, 180, '#C0C0C0');
+                    drawPixelRect(x + 30, baseY - 130, 40, 25, '#FFFFFF');
+                    drawPixelRect(x + 35, baseY - 120, 30, 10, '#FF0000');
+                    drawPixelRect(x + 40, baseY - 200, 20, 25, '#C0C0C0');
+                    // Antenna
+                    drawPixelRect(x + 48, baseY - 230, 4, 35, '#808080');
+                    break;
+                    
+                case 'burjKhalifa':
+                    // Burj Khalifa
+                    drawPixelRect(x + 40, baseY - 200, 20, 200, '#87CEEB');
+                    drawPixelRect(x + 35, baseY - 150, 30, 150, '#ADD8E6');
+                    drawPixelRect(x + 30, baseY - 100, 40, 100, '#B0C4DE');
+                    drawPixelRect(x + 25, baseY - 50, 50, 50, '#B0C4DE');
+                    // Spire
+                    drawPixelRect(x + 47, baseY - 230, 6, 35, '#C0C0C0');
+                    break;
+                    
+                case 'santaVillage':
+                    // Santa's Village in Finland
+                    drawPixelRect(x + 10, baseY - 60, 80, 60, '#8B4513');
+                    drawPixelRect(x, baseY - 90, 100, 35, '#FFFFFF');
+                    // Northern lights
+                    for(let i = 0; i < 5; i++) {
+                        ctx.fillStyle = `rgba(0, 255, 128, ${0.3 - i * 0.05})`;
+                        ctx.beginPath();
+                        ctx.arc(x + 50 + Math.sin(gameState.frame * 0.05 + i) * 30, baseY - 150 - i * 20, 40, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    // Sign
+                    drawPixelRect(x + 90, baseY - 40, 5, 40, '#8B4513');
+                    drawPixelRect(x + 80, baseY - 50, 25, 15, '#FF0000');
+                    break;
+                    
+                case 'fjords':
+                    // Norwegian Fjords
+                    ctx.fillStyle = '#2F4F4F';
+                    ctx.beginPath();
+                    ctx.moveTo(x, baseY);
+                    ctx.lineTo(x + 30, baseY - 100);
+                    ctx.lineTo(x + 50, baseY - 60);
+                    ctx.lineTo(x + 70, baseY - 120);
+                    ctx.lineTo(x + 100, baseY);
+                    ctx.fill();
+                    // Snow caps
+                    drawPixelRect(x + 25, baseY - 100, 15, 10, '#FFFFFF');
+                    drawPixelRect(x + 65, baseY - 120, 15, 12, '#FFFFFF');
+                    // Water
+                    drawPixelRect(x + 35, baseY - 20, 30, 20, '#1E90FF');
+                    break;
+                    
+                case 'marinaBay':
+                    // Marina Bay Sands
+                    drawPixelRect(x, baseY - 120, 25, 120, '#4A4A4A');
+                    drawPixelRect(x + 35, baseY - 120, 25, 120, '#4A4A4A');
+                    drawPixelRect(x + 70, baseY - 120, 25, 120, '#4A4A4A');
+                    // Top boat
+                    drawPixelRect(x - 10, baseY - 140, 115, 20, '#3A3A3A');
+                    drawPixelRect(x + 20, baseY - 145, 60, 8, '#00CED1');
+                    // Pool
+                    drawPixelRect(x + 30, baseY - 150, 40, 6, '#00BFFF');
+                    break;
+                    
+                case 'petronasTowers':
+                    // Petronas Towers
+                    drawPixelRect(x + 10, baseY - 160, 30, 160, '#C0C0C0');
+                    drawPixelRect(x + 60, baseY - 160, 30, 160, '#C0C0C0');
+                    // Spires
+                    drawPixelRect(x + 22, baseY - 180, 6, 25, '#808080');
+                    drawPixelRect(x + 72, baseY - 180, 6, 25, '#808080');
+                    // Bridge
+                    drawPixelRect(x + 38, baseY - 100, 24, 10, '#A0A0A0');
+                    // Tapering
+                    drawPixelRect(x + 15, baseY - 160, 20, 15, '#D0D0D0');
+                    drawPixelRect(x + 65, baseY - 160, 20, 15, '#D0D0D0');
+                    break;
+                    
+                case 'borobudur':
+                    // Borobudur Temple
+                    for(let i = 0; i < 5; i++) {
+                        drawPixelRect(x + i * 8, baseY - 20 - i * 18, 100 - i * 16, 20, '#808080');
+                    }
+                    // Stupas
+                    for(let i = 0; i < 3; i++) {
+                        ctx.fillStyle = '#696969';
+                        ctx.beginPath();
+                        ctx.arc(x + 30 + i * 20, baseY - 100, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    // Main stupa
+                    ctx.fillStyle = '#505050';
+                    ctx.beginPath();
+                    ctx.arc(x + 50, baseY - 120, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'tajMahal':
+                    // Taj Mahal
+                    drawPixelRect(x + 20, baseY - 80, 60, 80, '#FFFAFA');
+                    // Main dome
+                    ctx.fillStyle = '#FFFAFA';
+                    ctx.beginPath();
+                    ctx.arc(x + 50, baseY - 100, 30, Math.PI, 0);
+                    ctx.fill();
+                    // Small domes
+                    ctx.beginPath();
+                    ctx.arc(x + 20, baseY - 70, 12, Math.PI, 0);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x + 80, baseY - 70, 12, Math.PI, 0);
+                    ctx.fill();
+                    // Minarets
+                    drawPixelRect(x, baseY - 100, 12, 100, '#FFFAFA');
+                    drawPixelRect(x + 88, baseY - 100, 12, 100, '#FFFAFA');
+                    // Spire
+                    drawPixelRect(x + 47, baseY - 135, 6, 15, '#FFD700');
+                    break;
+                    
+                case 'grandPalace':
+                    // Thai Grand Palace
+                    drawPixelRect(x + 10, baseY - 60, 80, 60, '#FFFFFF');
+                    // Golden spires
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 30, baseY - 60);
+                    ctx.lineTo(x + 40, baseY - 120);
+                    ctx.lineTo(x + 50, baseY - 60);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(x + 50, baseY - 60);
+                    ctx.lineTo(x + 60, baseY - 130);
+                    ctx.lineTo(x + 70, baseY - 60);
+                    ctx.fill();
+                    // Red and gold details
+                    drawPixelRect(x + 10, baseY - 70, 80, 12, '#FF0000');
+                    drawPixelRect(x + 15, baseY - 65, 70, 4, '#FFD700');
+                    break;
+            }
+        }
+        
+        function drawObstacle(obs) {
+            const x = obs.x;
+            const y = obs.y;
+            
+            switch(obs.type) {
+                case 'ornament':
+                    // Christmas ornament ball
+                    ctx.fillStyle = obs.color;
+                    ctx.beginPath();
+                    ctx.arc(x + 15, y + 15, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    drawPixelRect(x + 12, y - 5, 6, 8, '#FFD700');
+                    drawPixelRect(x + 10, y - 8, 10, 4, '#C0C0C0');
+                    // Shine
+                    drawPixelRect(x + 8, y + 5, 4, 4, '#FFFFFF');
+                    break;
+                    
+                case 'candyCane':
+                    // Candy cane
+                    drawPixelRect(x + 10, y, 10, 40, '#FFFFFF');
+                    drawPixelRect(x + 10, y, 10, 8, '#FF0000');
+                    drawPixelRect(x + 10, y + 16, 10, 8, '#FF0000');
+                    drawPixelRect(x + 10, y + 32, 10, 8, '#FF0000');
+                    // Hook
+                    drawPixelRect(x, y - 5, 15, 10, '#FF0000');
+                    drawPixelRect(x - 5, y - 5, 10, 10, '#FFFFFF');
+                    break;
+                    
+                case 'wreath':
+                    // Christmas wreath
+                    ctx.strokeStyle = '#228B22';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.arc(x + 20, y + 20, 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                    // Bow
+                    drawPixelRect(x + 15, y - 2, 10, 8, '#FF0000');
+                    drawPixelRect(x + 10, y + 2, 8, 6, '#FF0000');
+                    drawPixelRect(x + 22, y + 2, 8, 6, '#FF0000');
+                    // Berries
+                    drawPixelRect(x + 5, y + 15, 5, 5, '#FF0000');
+                    drawPixelRect(x + 30, y + 20, 5, 5, '#FF0000');
+                    break;
+                    
+                case 'snowman':
+                    // Snowman
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.arc(x + 20, y + 35, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x + 20, y + 15, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x + 20, y - 2, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Hat
+                    drawPixelRect(x + 10, y - 15, 20, 5, '#000000');
+                    drawPixelRect(x + 13, y - 28, 14, 15, '#000000');
+                    // Face
+                    drawPixelRect(x + 15, y - 5, 3, 3, '#000000');
+                    drawPixelRect(x + 22, y - 5, 3, 3, '#000000');
+                    drawPixelRect(x + 18, y, 4, 6, '#FFA500');
+                    break;
+                    
+                case 'star':
+                    // Christmas star
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    for(let i = 0; i < 5; i++) {
+                        const angle = (i * 72 - 90) * Math.PI / 180;
+                        const innerAngle = ((i * 72) + 36 - 90) * Math.PI / 180;
+                        if(i === 0) {
+                            ctx.moveTo(x + 15 + Math.cos(angle) * 15, y + 15 + Math.sin(angle) * 15);
+                        } else {
+                            ctx.lineTo(x + 15 + Math.cos(angle) * 15, y + 15 + Math.sin(angle) * 15);
+                        }
+                        ctx.lineTo(x + 15 + Math.cos(innerAngle) * 7, y + 15 + Math.sin(innerAngle) * 7);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'bell':
+                    // Christmas bell
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(x + 15, y + 10, 8, Math.PI, 0);
+                    ctx.fill();
+                    drawPixelRect(x + 5, y + 10, 20, 25, '#FFD700');
+                    drawPixelRect(x + 2, y + 30, 26, 8, '#FFD700');
+                    // Clapper
+                    ctx.fillStyle = '#8B4513';
+                    ctx.beginPath();
+                    ctx.arc(x + 15, y + 35, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Ribbon
+                    drawPixelRect(x + 12, y - 5, 6, 12, '#FF0000');
+                    break;
+            }
+        }
+        
+        function drawGift(gift) {
+            const x = gift.x;
+            const y = gift.y;
+            
+            // Box
+            drawPixelRect(x, y + 5, 30, 25, gift.color);
+            // Lid
+            drawPixelRect(x - 2, y, 34, 8, gift.lidColor);
+            // Ribbon vertical
+            drawPixelRect(x + 12, y + 5, 6, 25, gift.ribbonColor);
+            // Ribbon horizontal
+            drawPixelRect(x, y + 15, 30, 6, gift.ribbonColor);
+            // Bow
+            drawPixelRect(x + 8, y - 5, 6, 8, gift.ribbonColor);
+            drawPixelRect(x + 16, y - 5, 6, 8, gift.ribbonColor);
+            drawPixelRect(x + 12, y - 3, 6, 6, gift.ribbonColor);
+            
+            // Sparkle
+            if (gameState.frame % 20 < 10) {
+                drawPixelRect(x - 5, y - 5, 4, 4, '#FFFFFF');
+                drawPixelRect(x + 30, y + 5, 3, 3, '#FFFFFF');
+            }
+        }
+        
+        function drawPortal(portal) {
+            const x = portal.x;
+            const y = portal.y;
+            
+            // Swirling portal effect
+            ctx.save();
+            ctx.translate(x + 25, y + 40);
+            ctx.rotate(gameState.frame * 0.05);
+            
+            for(let i = 0; i < 6; i++) {
+                const angle = (i * 60) * Math.PI / 180;
+                const radius = 30 + Math.sin(gameState.frame * 0.1 + i) * 5;
+                ctx.fillStyle = `hsl(${(gameState.frame * 2 + i * 40) % 360}, 100%, 60%)`;
+                ctx.beginPath();
+                ctx.arc(Math.cos(angle) * radius * 0.3, Math.sin(angle) * radius * 0.3, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+            
+            // Portal ring
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(x + 25, y + 40, 35, 45, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.strokeStyle = `hsl(${gameState.frame * 3 % 360}, 100%, 70%)`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(x + 25, y + 40, 30, 40, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Destination text
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText(portal.destination.name, x + 25, y - 5);
+            ctx.fillText(portal.destination.flag, x + 25, y + 90);
+        }
+        
+        function drawParticle(p) {
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawSnowflake(s) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.globalAlpha = 0.8;
+            ctx.fillRect(s.x, s.y, s.size, s.size);
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawBackground() {
+            const country = countries[gameState.currentCountry];
+            
+            // Sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, country.color);
+            gradient.addColorStop(1, shadeColor(country.color, -30));
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Stars
+            ctx.fillStyle = '#FFFFFF';
+            for(let i = 0; i < 30; i++) {
+                const starX = (i * 97 + gameState.frame * 0.1) % canvas.width;
+                const starY = (i * 53) % 200;
+                ctx.fillRect(starX, starY, 2, 2);
+            }
+            
+            // Moon
+            ctx.fillStyle = '#FFFACD';
+            ctx.beginPath();
+            ctx.arc(700, 60, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = country.color;
+            ctx.beginPath();
+            ctx.arc(710, 55, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ground
+            drawPixelRect(0, 420, canvas.width, 80, country.groundColor);
+            
+            // Ground details
+            for(let i = 0; i < 20; i++) {
+                const detailX = (i * 50 - gameState.frame * gameState.gameSpeed * 0.5) % (canvas.width + 50) - 50;
+                if (country.groundColor === '#FFFFFF' || country.groundColor === '#F5F5F5' || country.groundColor === '#E8E8E8' || country.groundColor === '#DCDCDC') {
+                    // Snow mounds
+                    ctx.fillStyle = '#F0F0F0';
+                    ctx.beginPath();
+                    ctx.arc(detailX + 25, 430, 15, Math.PI, 0);
+                    ctx.fill();
+                } else {
+                    drawPixelRect(detailX, 425, 3, 3, shadeColor(country.groundColor, -20));
+                }
+            }
+            
+            // Scrolling landmark
+            const landmarkX = (800 - (gameState.frame * gameState.gameSpeed * 0.3) % 1000);
+            if (landmarkX > -150 && landmarkX < 850) {
+                drawLandmark(country.landmark, landmarkX);
+            }
+            
+            // Second landmark offset
+            const landmarkX2 = (1300 - (gameState.frame * gameState.gameSpeed * 0.3) % 1000);
+            if (landmarkX2 > -150 && landmarkX2 < 850) {
+                drawLandmark(country.landmark, landmarkX2);
+            }
+        }
+        
+        function shadeColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + 
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + 
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+        
+        // Spawn functions
+        function spawnObstacle() {
+            const types = ['ornament', 'candyCane', 'wreath', 'snowman', 'star', 'bell'];
+            const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFD700', '#FF69B4', '#00CED1'];
+            
+            obstacles.push({
+                x: canvas.width + 50,
+                y: 300 + Math.random() * 100,
+                type: types[Math.floor(Math.random() * types.length)],
+                color: colors[Math.floor(Math.random() * colors.length)],
+                width: 40,
+                height: 50
+            });
+        }
+        
+        function spawnGift() {
+            const colors = ['#FF0000', '#00AA00', '#0066CC', '#FFD700', '#FF69B4'];
+            const lidColors = ['#CC0000', '#008800', '#0044AA', '#CCAA00', '#CC5599'];
+            const ribbonColors = ['#FFD700', '#FF0000', '#FFFFFF', '#FF0000', '#FFD700'];
+            const idx = Math.floor(Math.random() * colors.length);
+            
+            gifts.push({
+                x: canvas.width + 50,
+                y: 280 + Math.random() * 120,
+                color: colors[idx],
+                lidColor: lidColors[idx],
+                ribbonColor: ribbonColors[idx],
+                width: 30,
+                height: 30
+            });
+        }
+        
+        function spawnPortal() {
+            let availableCountries = countries.filter((c, i) => !gameState.countriesVisited.includes(i));
+            if (availableCountries.length === 0) {
+                availableCountries = countries.filter((c, i) => i !== gameState.currentCountry);
+            }
+            
+            const destination = availableCountries[Math.floor(Math.random() * availableCountries.length)];
+            
+            portals.push({
+                x: canvas.width + 50,
+                y: 280,
+                width: 50,
+                height: 90,
+                destination: destination
+            });
+        }
+        
+        function createParticles(x, y, color, count) {
+            for(let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    color: color,
+                    size: Math.random() * 6 + 2,
+                    life: 1
+                });
+            }
+        }
+        
+        // Collision detection
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+        
+        // Input handling
+        const keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === 'Enter' && gameState.gifts >= 5 && !gameState.powerActive) {
+                activatePower();
+            }
+            
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        function activatePower() {
+            gameState.powerActive = true;
+            gameState.powerTimer = 120; // 2 seconds at 60fps
+            gameState.gifts -= 5;
+            updateUI();
+            playSound('power');
+            
+            // Clear all obstacles with particles
+            obstacles.forEach(obs => {
+                createParticles(obs.x + 20, obs.y + 20, '#FFD700', 10);
+            });
+            obstacles = [];
+        }
+        
+        function updateUI() {
+            document.getElementById('giftCount').textContent = gameState.gifts;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('lives').textContent = gameState.lives;
+            document.getElementById('powerFill').style.width = Math.min(gameState.gifts / 5 * 100, 100) + '%';
+            document.getElementById('countryName').textContent = countries[gameState.currentCountry].name;
+            document.getElementById('countryFlag').textContent = countries[gameState.currentCountry].flag;
+        }
+        
+        function update() {
+            if (!gameState.running) return;
+            
+            gameState.frame++;
+            
+            // Update power timer
+            if (gameState.powerActive) {
+                gameState.powerTimer--;
+                if (gameState.powerTimer <= 0) {
+                    gameState.powerActive = false;
+                }
+            }
+            
+            // Santa movement
+            const moveSpeed = 5;
+            if (keys['ArrowUp']) santa.y -= moveSpeed;
+            if (keys['ArrowDown']) santa.y += moveSpeed;
+            if (keys['ArrowLeft']) santa.x -= moveSpeed;
+            if (keys['ArrowRight']) santa.x += moveSpeed;
+            
+            // Boundary checking
+            santa.y = Math.max(100, Math.min(380, santa.y));
+            santa.x = Math.max(50, Math.min(400, santa.x));
+            
+            // Spawn objects
+            if (gameState.frame % 90 === 0) spawnObstacle();
+            if (gameState.frame % 120 === 0) spawnGift();
+            if (gameState.frame % 600 === 0) spawnPortal();
+            
+            // Update obstacles
+            obstacles.forEach((obs, i) => {
+                obs.x -= gameState.gameSpeed;
+                
+                if (obs.x < -50) {
+                    obstacles.splice(i, 1);
+                    gameState.score += 10;
+                    updateUI();
+                }
+                
+                // Collision with Santa
+                if (!gameState.powerActive && checkCollision(santa, obs)) {
+                    obstacles.splice(i, 1);
+                    gameState.lives--;
+                    playSound('hit');
+                    createParticles(santa.x + 40, santa.y + 25, '#FF0000', 15);
+                    updateUI();
+                    
+                    if (gameState.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+            
+            // Update gifts
+            gifts.forEach((gift, i) => {
+                gift.x -= gameState.gameSpeed;
+                
+                if (gift.x < -50) {
+                    gifts.splice(i, 1);
+                }
+                
+                // Collision with Santa
+                if (checkCollision(santa, gift)) {
+                    gifts.splice(i, 1);
+                    gameState.gifts++;
+                    gameState.score += 50;
+                    playSound('collect');
+                    createParticles(gift.x + 15, gift.y + 15, gift.color, 10);
+                    updateUI();
+                }
+            });
+            
+            // Update portals
+            portals.forEach((portal, i) => {
+                portal.x -= gameState.gameSpeed * 0.7;
+                
+                if (portal.x < -100) {
+                    portals.splice(i, 1);
+                }
+                
+                // Collision with Santa
+                if (checkCollision(santa, portal)) {
+                    const destIndex = countries.findIndex(c => c.name === portal.destination.name);
+                    if (destIndex !== -1) {
+                        gameState.currentCountry = destIndex;
+                        if (!gameState.countriesVisited.includes(destIndex)) {
+                            gameState.countriesVisited.push(destIndex);
+                            gameState.score += 200;
+                        }
+                        playSound('portal');
+                        createParticles(santa.x + 40, santa.y + 25, '#FFFFFF', 30);
+                        updateUI();
+                    }
+                    portals.splice(i, 1);
+                }
+            });
+            
+            // Update particles
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            });
+            
+            // Update snowflakes
+            snowflakes.forEach(s => {
+                s.x -= gameState.gameSpeed * 0.5;
+                s.y += s.speed;
+                
+                if (s.y > canvas.height) {
+                    s.y = -5;
+                    s.x = Math.random() * canvas.width;
+                }
+                if (s.x < -5) {
+                    s.x = canvas.width + 5;
+                }
+            });
+            
+            // Increase difficulty
+            if (gameState.frame % 500 === 0) {
+                gameState.gameSpeed = Math.min(gameState.gameSpeed + 0.2, 8);
+            }
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+            
+            // Draw snowflakes
+            snowflakes.forEach(drawSnowflake);
+            
+            // Draw game objects
+            portals.forEach(drawPortal);
+            obstacles.forEach(drawObstacle);
+            gifts.forEach(drawGift);
+            
+            // Draw Santa
+            drawSanta(santa.x, santa.y);
+            
+            // Draw particles
+            particles.forEach(drawParticle);
+            
+            // Power active effect
+            if (gameState.powerActive) {
+                ctx.fillStyle = `rgba(255, 215, 0, ${0.1 + Math.sin(gameState.frame * 0.2) * 0.1})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw power text
+                ctx.fillStyle = '#FFD700';
+                ctx.font = '16px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText('🎄 CHRISTMAS POWER! 🎄', canvas.width / 2, 80);
+            }
+        }
+        
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            initAudio();
+            
+            gameState = {
+                running: true,
+                score: 0,
+                gifts: 0,
+                lives: 3,
+                powerReady: false,
+                powerActive: false,
+                powerTimer: 0,
+                currentCountry: 0,
+                countriesVisited: [0],
+                gameSpeed: 3,
+                frame: 0
+            };
+            
+            santa = {
+                x: 100,
+                y: 250,
+                width: 80,
+                height: 50
+            };
+            
+            obstacles = [];
+            gifts = [];
+            portals = [];
+            particles = [];
+            
+            updateUI();
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            
+            playSound('jingle');
+            startBgMusic();
+        }
+        
+        function gameOver() {
+            gameState.running = false;
+            stopBgMusic();
+            
+            document.getElementById('finalScore').textContent = 'SCORE: ' + gameState.score;
+            document.getElementById('countriesVisited').textContent = 'COUNTRIES VISITED: ' + gameState.countriesVisited.length;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+        
+        // Event listeners
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn').addEventListener('click', startGame);
+        document.getElementById('muteBtn').addEventListener('click', () => {
+            isMuted = !isMuted;
+            document.getElementById('muteBtn').textContent = isMuted ? '🔇' : '🔊';
+            if (isMuted) {
+                stopBgMusic();
+            } else if (gameState.running) {
+                startBgMusic();
+            }
+        });
+        
+        // Start game loop
+        gameLoop();
+    </script>
+</body>
+</html>
